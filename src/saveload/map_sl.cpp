@@ -14,6 +14,8 @@
 #include "../core/bitmath_func.hpp"
 #include "../fios.h"
 #include <array>
+#include <fstream>
+#include <iostream>
 
 #include "saveload.h"
 
@@ -206,12 +208,35 @@ static void Save_MAP5()
 {
 	std::array<byte, MAP_SL_BUF_SIZE> buf;
 	TileIndex size = MapSize();
+    std::ofstream fd;
+    byte chunk;
+    TileIndex index;
+
+    fd.open("seznam.type");
 
 	SlSetLength(size);
 	for (TileIndex i = 0; i != size;) {
-		for (uint j = 0; j != MAP_SL_BUF_SIZE; j++) buf[j] = _m[i++].m5;
+		for (uint j = 0; j != MAP_SL_BUF_SIZE; j++) {
+            index = i++;
+            chunk = _m[index].m5;
+            buf[j] = chunk;
+
+            // 0x10 bitset represents the tile contains some tracks
+            if((int) _m[index].type == 0x10) {
+                fd << TileX(i) << ";" << TileY(i) << ";";
+                if(chunk & (1 << 0)) fd << "x";
+                if(chunk & (1 << 1)) fd << "y";
+                if(chunk & (1 << 2)) fd << "n";
+                if(chunk & (1 << 3)) fd << "s";
+                if(chunk & (1 << 4)) fd << "w";
+                if(chunk & (1 << 5)) fd << "e";
+                fd << std::endl;
+            }
+        }
 		SlArray(buf.data(), MAP_SL_BUF_SIZE, SLE_UINT8);
 	}
+
+    fd.close();
 }
 
 static void Load_MAP6()
