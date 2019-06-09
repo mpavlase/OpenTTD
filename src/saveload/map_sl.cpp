@@ -214,6 +214,9 @@ static void Save_MAP5()
 
     fd.open("seznam.type");
 
+    // create header with map size
+	fd << MapSizeX() << ";" << MapSizeY() << std::endl;
+
 	SlSetLength(size);
 	for (TileIndex i = 0; i != size;) {
 		for (uint j = 0; j != MAP_SL_BUF_SIZE; j++) {
@@ -221,7 +224,7 @@ static void Save_MAP5()
             chunk = _m[index].m5;
             buf[j] = chunk;
 
-            // 0x10 bitset represents the tile contains some tracks
+            // 0x10 bitset represents the tile with some tracks
             if((int) _m[index].type == 0x10) {
                 fd << "rail" << ";" << TileX(i) << ";" << TileY(i) << ";";
                 if(chunk & (1 << 0)) fd << "x";
@@ -232,19 +235,36 @@ static void Save_MAP5()
                 if(chunk & (1 << 5)) fd << "e";
                 fd << std::endl;
             }
-            // 0x50 bitset represents the tile contains station
+
+            // 0x50 bitset represents the tile with station
             if((int) _m[index].type == 0x50) {
                 fd << "station" << ";" << TileX(i) << ";" << TileY(i) << ";";
                 if((chunk & (1 << 0)) == 1) {
-                    fd << "x";
-                } else {
                     fd << "y";
+                } else {
+                    fd << "x";
                 }
-                //if(chunk & (1 << 1)) fd << "y";
-                //if(chunk & (1 << 2)) fd << "n";
-                //if(chunk & (1 << 3)) fd << "s";
-                //if(chunk & (1 << 4)) fd << "w";
-                //if(chunk & (1 << 5)) fd << "e";
+                fd << std::endl;
+            }
+
+            // 0x90 bitset represents the tile with bridge/tunnel
+            if((int) _m[index].type == 0x90) {
+                // not sure if detecting via m6 is reliable enough
+                if(_me[index].m6 == 0) {
+                    fd << "tunnel";
+                } else {
+                    fd << "bridge";
+                }
+                fd << ";" << TileX(i) << ";" << TileY(i) << ";";
+
+                if((chunk & (1 << 0)) == 1) {
+                    fd << "y";
+                } else {
+                    fd << "x";
+                }
+
+                //fd << ";" << (int) _me[index].m6;
+
                 fd << std::endl;
             }
         }
