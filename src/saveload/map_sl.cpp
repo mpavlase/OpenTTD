@@ -223,13 +223,28 @@ static void Save_MAP5()
 
             // 0x10 bitset represents the tile contains some tracks
             if((int) _m[index].type == 0x10) {
-                fd << TileX(i) << ";" << TileY(i) << ";";
+                fd << "rail" << ";" << TileX(i) << ";" << TileY(i) << ";";
                 if(chunk & (1 << 0)) fd << "x";
                 if(chunk & (1 << 1)) fd << "y";
                 if(chunk & (1 << 2)) fd << "n";
                 if(chunk & (1 << 3)) fd << "s";
                 if(chunk & (1 << 4)) fd << "w";
                 if(chunk & (1 << 5)) fd << "e";
+                fd << std::endl;
+            }
+            // 0x50 bitset represents the tile contains station
+            if((int) _m[index].type == 0x50) {
+                fd << "station" << ";" << TileX(i) << ";" << TileY(i) << ";";
+                if((chunk & (1 << 0)) == 1) {
+                    fd << "x";
+                } else {
+                    fd << "y";
+                }
+                //if(chunk & (1 << 1)) fd << "y";
+                //if(chunk & (1 << 2)) fd << "n";
+                //if(chunk & (1 << 3)) fd << "s";
+                //if(chunk & (1 << 4)) fd << "w";
+                //if(chunk & (1 << 5)) fd << "e";
                 fd << std::endl;
             }
         }
